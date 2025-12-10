@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block title %} My Dashboard {% endblock %}
+
+{% block content %}
+
+    <h1>This is my dashboard</h1>
+    <p>Assets:</p>
+        <ul>
+            {% for a in assets %}
+                <li>{{ a.name }}: {{ a.balance | usd }}</li>
+            {% endfor %}
+        </ul>
+    <p>Liabilities:</p>
+            <ul>
+            {% for l in liabilities %}
+                <li>{{ l.name }}: {{ l.balance | usd }}</li>
+            {% endfor %}
+        </ul>
+    <p>Networth calculation: {{ networth | usd }}</p>
+{% endblock %}
