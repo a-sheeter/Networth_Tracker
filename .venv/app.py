@@ -14,7 +14,17 @@ db = SQL("sqlite:///tracker.db")
 
 # Networth calculation
 def calculate_networth():
-    # pull accounts balances by assets and liabilities
+    # Get all accounts
+    accounts = db.execute("SELECT * FROM accounts")
+
+    for acct in accounts:
+        if acct["source_type"] == "api":
+            latest = get_balance_from_provider(acct["api_provider"], acct["account_identifier"])
+
+            if latest is not None:
+                db.execute("UPDATE accounts SET balance = ? WHERE id = ?", latest, acct["id"])
+
+    # After updating balances, recompute totals
     assets = db.execute("SELECT name, balance FROM accounts WHERE type = ?", 'asset')
     liabilities = db.execute("SELECT name, balance FROM accounts WHERE type = ?", 'liability')
 
