@@ -1,17 +1,10 @@
 from flask import Flask, request, redirect, render_template, session
-from dotenv import load_dotenv
-import os
 from cs50 import SQL
 from helper_functions import usd
-
-load_dotenv() # loads .env variables
+from api_handlers import get_balance_from_provider
 
 # Configure application
 app = Flask(__name__)
-
-# accessing secrets securely
-API_KEY = os.getenv("FINANCIAL_API_KEY")
-API_SECRET = os.getenv("FINANCIAL_API_SECRET")
 
 # Jinja filters
 app.jinja_env.filters["usd"] = usd
@@ -74,8 +67,13 @@ def account(account_id=None):
         source_type = request.form.get("source_type")
         api_provider = request.form.get("api_provider")
         account_identifier = request.form.get("account_identifier")
-        balance = request.form.get("balance")
-        balance = float(balance) if balance else None
+
+        # Get balance for api and manual
+        if source_type == "api":
+            balance = get_balance_from_provider(api_provider, account_identifier)
+        else:
+            balance = request.form.get("balance")
+            balance = float(balance) if balance else None
 
         if account_id:
             db.execute(
