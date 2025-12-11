@@ -1,0 +1,1 @@
+from .dispatcher import get_balance_for_account

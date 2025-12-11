@@ -1,7 +1,7 @@
 from flask import Flask, request, redirect, render_template, session
 from cs50 import SQL
 from helper_functions import usd
-from api_handlers import get_balance_from_provider
+from api_handlers import get_balance_for_account
 
 # Configure application
 app = Flask(__name__)
@@ -19,7 +19,7 @@ def calculate_networth():
 
     for acct in accounts:
         if acct["source_type"] == "api":
-            latest = get_balance_from_provider(acct["api_provider"], acct["account_identifier"])
+            latest = get_balance_for_account(acct)
 
             if latest is not None:
                 db.execute("UPDATE accounts SET balance = ? WHERE id = ?", latest, acct["id"])
@@ -80,7 +80,13 @@ def account(account_id=None):
 
         # Get balance for api and manual
         if source_type == "api":
-            balance = get_balance_from_provider(api_provider, account_identifier)
+            # Build temporary account dict to send
+            tmp_account = {
+                "api_provider": api_provider,
+                "account_identifier": account_identifier
+            }
+
+            balance = get_balance_for_account(tmp_account)
         else:
             balance = request.form.get("balance")
             balance = float(balance) if balance else None
