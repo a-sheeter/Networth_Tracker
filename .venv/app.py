@@ -2,6 +2,7 @@ from flask import Flask, request, redirect, render_template, session
 from cs50 import SQL
 from helper_functions import usd
 from api_handlers import get_balance_for_account
+from charts import networth_pie_chart
 
 # Configure application
 app = Flask(__name__)
@@ -41,7 +42,18 @@ def index():
     assets = db.execute("SELECT name, balance FROM accounts WHERE type = ?", 'asset')
     liabilities = db.execute("SELECT name, balance FROM accounts WHERE type = ?", 'liability')
 
-    return render_template("index.html", assets=assets, liabilities=liabilities, networth=networth)
+    asset_total = sum(a["balance"] for a in assets)
+    liability_total = sum(abs(l["balance"]) for l in liabilities) # abs value pie chart does not allow negative integers
+
+    pie_chart = networth_pie_chart(asset_total, liability_total)
+
+    return render_template(
+                            "index.html", 
+                            pie_chart=pie_chart,
+                           assets=assets, 
+                           liabilities=liabilities, 
+                           networth=networth
+                           )
 
 @app.route("/login")
 def login():
