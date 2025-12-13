@@ -124,11 +124,6 @@ def delete(account_id):
 
     return redirect("/accounts")
 
-
-@app.route("/goals")
-def goals():
-    return render_template("goals.html")
-
 @app.route("/history")
 def history():
     return render_template("history.html")
