@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block title %} Update Net Worth {% endblock %}
+
+{% block content %}
+
+<h1>Update Account Balances</h1>
+
+<form method="post">
+    <table>
+        <thead>
+            <tr>
+                <th>Account</th>
+                <th>Balance</th>
+                <th>Update</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+            <tr>
+                <td>{{ account.name }}</td>
+                <td>{{ account.balance | usd }}</td>
+                <td>
+                    <form method="post">
+                        <input type="hidden" name="account_id" value="{{ account.id }}">
+                        <input type="number" step="0.01" name="balance" value="{{ account.balance }}">
+                        <button type="submit">Update</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <button type="submit" name="update_all" value="1">
+        Update All Accounts
+    </button>
+</form>
+
+
+{% endblock %}

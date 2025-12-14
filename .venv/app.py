@@ -2,7 +2,7 @@ from flask import Flask, request, redirect, render_template, session
 from cs50 import SQL
 from helper_functions import usd
 from api_handlers import get_balance_for_account
-from charts import networth_pie_chart
+from charts import networth_pie_chart, networth_line_chart
 
 # Configure application
 app = Flask(__name__)
@@ -15,6 +15,7 @@ db = SQL("sqlite:///tracker.db")
 
 # Networth calculation
 def calculate_networth():
+    user_id = 1
     # Get all accounts
     accounts = db.execute("SELECT * FROM accounts")
 
@@ -32,24 +33,70 @@ def calculate_networth():
     asset_total = sum(float(a["balance"]) for a in assets)
     liability_total = sum(float(l["balance"]) for l in liabilities)
 
-    return asset_total - liability_total
+    networth = asset_total - liability_total
+
+    # update history 
+    db.execute("INSERT INTO balances (user_id, value, assets, liabilities) VALUES (?, ?, ?, ?)", user_id, networth, asset_total, liability_total)
+
+    return networth
+
+
+@app.route("/update-networth", methods=["GET", "POST"])
+def update_networth():
+    user_id = 1
+
+    if request.method == "POST":
+        # update all
+        if request.form.get("update_all"):
+            for key, value in request.form.items():
+                if key.startswith("account_"):
+                    account_id = key.replace("account_", "")
+                    db.execute("UPDATE accounts SET balance = ?, last_updated = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?", float(value), account_id, user_id)
+        # update a single account
+        elif request.form.get("account_id"):
+            account_id = request.form.get("account_id")
+            balance = request.form.get("balance")
+
+            db.execute("UPDATE accounts SET balance = ?, last_updated = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?", float(balance), account_id, user_id)
+            
+        return redirect("/")
+
+    accounts = db.execute("SELECT id, name, balance FROM accounts WHERE user_id = ? ORDER BY name", user_id)
+
+    return render_template("update_networth.html", accounts=accounts)
 
 
 @app.route("/")
 def index():
     networth = calculate_networth()
 
-    assets = db.execute("SELECT name, balance FROM accounts WHERE type = ?", 'asset')
-    liabilities = db.execute("SELECT name, balance FROM accounts WHERE type = ?", 'liability')
+    assets = db.execute("SELECT name, balance, strftime('%m-%d %H:%M', last_updated) AS last_updated FROM accounts WHERE type = ?", 'asset')
+    liabilities = db.execute("SELECT name, balance, strftime('%m-%d %H:%M', last_updated) AS last_updated FROM accounts WHERE type = ?", 'liability')
 
     asset_total = sum(a["balance"] for a in assets)
     liability_total = sum(abs(l["balance"]) for l in liabilities) # abs value pie chart does not allow negative integers
 
     pie_chart = networth_pie_chart(asset_total, liability_total)
 
+    history = db.execute(
+        """
+        SELECT strftime('%Y-%m', timestamp) AS month, AVG(value) AS networth FROM balances
+        WHERE user_id = ?
+        GROUP BY month
+        ORDER BY month
+        """,
+        1
+    )
+
+    months = [row["month"] for row in history]
+    values = [row["networth"] for row in history]
+
+    line_chart = networth_line_chart(months, values) if history else None
+
     return render_template(
                             "index.html", 
                             pie_chart=pie_chart,
+                            line_chart=line_chart,
                            assets=assets, 
                            liabilities=liabilities, 
                            networth=networth
@@ -89,6 +136,7 @@ def account(account_id=None):
         source_type = request.form.get("source_type")
         api_provider = request.form.get("api_provider")
         account_identifier = request.form.get("account_identifier")
+        url = request.form.get("url")
 
         # Get balance for api and manual
         if source_type == "api":
@@ -107,18 +155,18 @@ def account(account_id=None):
             db.execute(
                 """
                 UPDATE accounts
-                SET name=?, type=?, source_type=?, api_provider=?, account_identifier=?, balance=?
+                SET name=?, type=?, source_type=?, api_provider=?, account_identifier=?, balance=?, url=?
                 WHERE id=?
                 """,
-                name, type, source_type, api_provider, account_identifier, balance, account_id
+                name, type, source_type, api_provider, account_identifier, balance, url, account_id
             )
         else:
             db.execute(
                 """
-                INSERT INTO accounts (user_id, name, type, source_type, api_provider, account_identifier, balance)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO accounts (user_id, name, type, source_type, api_provider, account_identifier, balance, url)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                1, name, type, source_type, api_provider, account_identifier, balance
+                1, name, type, source_type, api_provider, account_identifier, balance, url
             )
         return redirect("/accounts")
     
@@ -138,5 +186,10 @@ def delete(account_id):
 
 @app.route("/history")
 def history():
-    return render_template("history.html")
+    balances = db.execute(
+        """
+        SELECT * FROM balances;
+        """
+    )
+    return render_template("history.html", balances=balances)
 

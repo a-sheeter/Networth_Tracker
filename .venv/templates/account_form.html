@@ -40,6 +40,11 @@
         value="{{ account.account_identifier if account else '' }}">
     <br>
 
+    <label for="url">Url to site:</label>
+    <input type="text" id="url" name="url"
+        value="{{ account.url if url else '' }}">
+    <br>
+
     <label for="balance">Balance:</label>
     <input type="text" id="balance" name="balance" value="{{ account.balance if account else '' }}">
     <br>

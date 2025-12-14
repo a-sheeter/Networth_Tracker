@@ -4,19 +4,25 @@
 
 {% block content %}
 
-    <h1>This is my dashboard</h1>
-    <img src="data:image/png;base64, {{ pie_chart }}" alt="Networth pie chart">
-    <p>Assets:</p>
-        <ul>
-            {% for a in assets %}
-                <li>{{ a.name }}: {{ a.balance | usd }}</li>
-            {% endfor %}
-        </ul>
-    <p>Liabilities:</p>
-            <ul>
-            {% for l in liabilities %}
-                <li>{{ l.name }}: {{ l.balance | usd }}</li>
-            {% endfor %}
-        </ul>
-    <p>Networth calculation: {{ networth | usd }}</p>
+<h1>This is my dashboard</h1>
+<a href="/update-networth">Update net worth</a>
+<p>Assets:</p>
+<ul>
+    {% for a in assets %}
+    <li>{{ a.name }} | {{ a.balance | usd }} | {{ a.last_updated }}</li>
+    {% endfor %}
+</ul>
+<p>Liabilities:</p>
+<ul>
+    {% for l in liabilities %}
+    <li>{{ l.name }} | {{ l.balance | usd }} | {{ l.last_updated }}</li>
+    {% endfor %}
+</ul>
+<p>Networth calculation: {{ networth | usd }}</p>
+{% if line_chart %}
+<img src="data:image/png;base64, {{ line_chart }}" alt="Net worth line chart">
+{% else %}
+<p>No net worth history yet.</p>
+{% endif %}
+<img src="data:image/png;base64, {{ pie_chart }}" alt="Networth pie chart">
 {% endblock %}

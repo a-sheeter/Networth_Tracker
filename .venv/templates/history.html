@@ -4,6 +4,21 @@
 
 {% block content %}
 
-    <h1>This is my history</h1>
-
+<h1>Net Worth History</h1>
+<table>
+    <tr>
+        <th>Total Value</th>
+        <th>Assets</th>
+        <th>Liabilities</th>
+        <th>Timestamp</th>
+    </tr>
+    {% for balance in balances %}
+    <tr>
+        <td>{{ balance.value | usd }}</td>
+        <td>{{ balance.assets | usd}}</td>
+        <td>{{ balance.liabilities | usd }}</td>
+        <td>{{ balance.timestamp }}</td>
+    </tr>
+    {% endfor %}
+</table>
 {% endblock %}
