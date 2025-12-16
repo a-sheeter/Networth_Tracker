@@ -209,6 +209,7 @@ def account(account_id=None):
     if request.method == "POST":
         name = request.form.get("name")
         type = request.form.get("type")
+        category = request.form.get("category")
         source_type = request.form.get("source_type")
         api_provider = request.form.get("api_provider")
         account_identifier = request.form.get("account_identifier")
@@ -231,18 +232,18 @@ def account(account_id=None):
             db.execute(
                 """
                 UPDATE accounts
-                SET name=?, type=?, source_type=?, api_provider=?, account_identifier=?, balance=?, url=?
+                SET name=?, type=?, category=?, source_type=?, api_provider=?, account_identifier=?, balance=?, url=?
                 WHERE id=?
                 """,
-                name, type, source_type, api_provider, account_identifier, balance, url, account_id
+                name, type, category, source_type, api_provider, account_identifier, balance, url, account_id
             )
         else:
             db.execute(
                 """
-                INSERT INTO accounts (user_id, name, type, source_type, api_provider, account_identifier, balance, url)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO accounts (user_id, name, type, category, source_type, api_provider, account_identifier, balance, url)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                1, name, type, source_type, api_provider, account_identifier, balance, url
+                1, name, type, category, source_type, api_provider, account_identifier, balance, url
             )
         return redirect("/accounts")
     

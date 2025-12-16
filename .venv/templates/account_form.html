@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<h1>{{ 'Edit account' if account else 'Add account'}}</h1>
+<h1>{{ 'Edit account' if account else 'Add an account'}}</h1>
 
 <form method="POST">
     <label for="name">Name:</label>
@@ -16,6 +16,10 @@
         <option value="asset" {% if account and account.type=='asset' %}selected{% endif %}>Asset</option>
         <option value="liability" {% if account and account.type=='liability' %}selected{% endif %}>Liability</option>
     </select>
+    <br>
+
+    <label for="category">Category:</label>
+    <input type="text" id="category" name="category" value="{{ account.category if account else '' }}">
     <br>
 
     <label for="source_type">Source Type:</label>
@@ -40,7 +44,7 @@
         value="{{ account.account_identifier if account else '' }}">
     <br>
 
-    <label for="url">Url to site:</label>
+    <label for="url">Url to login:</label>
     <input type="text" id="url" name="url"
         value="{{ account.url if url else '' }}">
     <br>
@@ -51,8 +55,5 @@
 
     <button type="submit">{{ 'Save Changes' if account else 'Add Account' }}</button>
 </form>
-
-<br>
-<a href="{{ url_for('accounts') }}">Back to Accounts List</a>
 
 {% endblock %}
