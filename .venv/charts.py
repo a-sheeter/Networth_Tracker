@@ -30,7 +30,6 @@ def networth_line_chart(months, values):
     ax.plot(months, values)
     ax.set_xlabel("Month")
     ax.set_ylabel("Net Worth")
-    ax.set_title("Net Worth Over Time")
     ax.tick_params(axis="x", rotation=45)
 
     buf = io.BytesIO()

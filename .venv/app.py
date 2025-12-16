@@ -26,7 +26,7 @@ db = SQL("sqlite:///tracker.db")
 def calculate_networth():
     user_id = session["user_id"]
     # Get all accounts
-    accounts = db.execute("SELECT * FROM accounts")
+    accounts = db.execute("SELECT * FROM accounts WHERE user_id = ?", user_id)
 
     for acct in accounts:
         if acct["source_type"] == "api":
@@ -42,7 +42,7 @@ def calculate_networth():
     asset_total = sum(float(a["balance"]) or 0 for a in assets)
     liability_total = sum(float(l["balance"]) or 0 for l in liabilities)
 
-    networth = asset_total - liability_total
+    networth = asset_total - abs(liability_total)
 
     # update history 
     db.execute("INSERT INTO balances (user_id, value, assets, liabilities) VALUES (?, ?, ?, ?)", user_id, networth, asset_total, liability_total)
@@ -82,8 +82,8 @@ def index():
 
     networth = calculate_networth()
 
-    assets = db.execute("SELECT name, balance, strftime('%m-%d %H:%M', last_updated) AS last_updated FROM accounts WHERE type = ? AND user_id = ?", 'asset', user_id)
-    liabilities = db.execute("SELECT name, balance, strftime('%m-%d %H:%M', last_updated) AS last_updated FROM accounts WHERE type = ? AND user_id = ?", 'liability', user_id)
+    assets = db.execute("SELECT name, balance, strftime('%m-%d at %H:%M', last_updated) AS last_updated FROM accounts WHERE type = ? AND user_id = ?", 'asset', user_id)
+    liabilities = db.execute("SELECT name, balance, strftime('%m-%d at %H:%M', last_updated) AS last_updated FROM accounts WHERE type = ? AND user_id = ?", 'liability', user_id)
 
     asset_total = sum(a["balance"] or 0 for a in assets)
     liability_total = sum(abs(l["balance"]) or 0 for l in liabilities) # abs value pie chart does not allow negative integers
@@ -107,14 +107,16 @@ def index():
     months = [row["month"] for row in history if row["networth"] is not None]
     values = [row["networth"] for row in history if row["networth"] is not None]
 
-    line_chart = networth_line_chart(months, values) if months else None
+    line_chart = networth_line_chart(months, values) if values[0] > 0 else None
 
     return render_template(
                             "index.html", 
                             pie_chart=pie_chart,
                             line_chart=line_chart,
                             assets=assets, 
-                            liabilities=liabilities, 
+                            asset_total=asset_total,
+                            liabilities=liabilities,
+                            liability_total=liability_total, 
                             networth=networth
                             )
 

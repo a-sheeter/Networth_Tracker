@@ -20,7 +20,7 @@
         <td>{{ account.type }}</td>
         <td>{{ account.balance | usd }}</td>
         <td>{{ account.last_updated }}</td>
-        <td><a href="{{ account.url }}">Go to website</a></td>
+        <td><a target="_blank" href="{{ account.url }}">Go to website</a></td>
         <td>
             <!-- Edit link -->
             <a href="{{ url_for('account', account_id=account.id) }}">Edit</a>

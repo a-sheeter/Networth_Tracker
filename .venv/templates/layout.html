@@ -14,9 +14,11 @@
             <a href="/history">History</a>
         </div>
         <div>
-            <a href="/login">Log In</a>
+            {% if session.get("user_id") %}
             <a href="/logout">Log Out</a>
-            <a href="/register">Register</a>
+            {% else %}
+            <a href="/login">Log In</a>
+            {% endif %}
         </div>
     </nav>
     {% block content %} {% endblock %}
