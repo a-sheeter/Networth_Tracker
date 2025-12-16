@@ -1,6 +1,10 @@
-from flask import Flask, request, redirect, render_template, session
 from cs50 import SQL
-from helper_functions import usd
+
+from flask import Flask, request, redirect, render_template, session
+from flask_session import Session
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from helper_functions import usd, apology, login_required
 from api_handlers import get_balance_for_account
 from charts import networth_pie_chart, networth_line_chart
 
@@ -10,12 +14,17 @@ app = Flask(__name__)
 # Jinja filters
 app.jinja_env.filters["usd"] = usd
 
+# Configure session to use filesystem (instead of signed cookies)
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
+
 # Configure cs50 library to use SQlite database
 db = SQL("sqlite:///tracker.db")
 
 # Networth calculation
 def calculate_networth():
-    user_id = 1
+    user_id = session["user_id"]
     # Get all accounts
     accounts = db.execute("SELECT * FROM accounts")
 
@@ -24,14 +33,14 @@ def calculate_networth():
             latest = get_balance_for_account(acct)
 
             if latest is not None:
-                db.execute("UPDATE accounts SET balance = ? WHERE id = ?", latest, acct["id"])
+                db.execute("UPDATE accounts SET balance = ? WHERE id = ? AND user_id = ?", latest, acct["id"], user_id)
 
     # After updating balances, recompute totals
-    assets = db.execute("SELECT name, balance FROM accounts WHERE type = ?", 'asset')
-    liabilities = db.execute("SELECT name, balance FROM accounts WHERE type = ?", 'liability')
+    assets = db.execute("SELECT name, balance FROM accounts WHERE type = ? AND user_id = ?", 'asset', user_id)
+    liabilities = db.execute("SELECT name, balance FROM accounts WHERE type = ? AND user_id = ?", 'liability', user_id)
 
-    asset_total = sum(float(a["balance"]) for a in assets)
-    liability_total = sum(float(l["balance"]) for l in liabilities)
+    asset_total = sum(float(a["balance"]) or 0 for a in assets)
+    liability_total = sum(float(l["balance"]) or 0 for l in liabilities)
 
     networth = asset_total - liability_total
 
@@ -43,7 +52,7 @@ def calculate_networth():
 
 @app.route("/update-networth", methods=["GET", "POST"])
 def update_networth():
-    user_id = 1
+    user_id = session["user_id"]
 
     if request.method == "POST":
         # update all
@@ -67,16 +76,23 @@ def update_networth():
 
 
 @app.route("/")
+@login_required
 def index():
+    user_id = session["user_id"]
+
     networth = calculate_networth()
 
-    assets = db.execute("SELECT name, balance, strftime('%m-%d %H:%M', last_updated) AS last_updated FROM accounts WHERE type = ?", 'asset')
-    liabilities = db.execute("SELECT name, balance, strftime('%m-%d %H:%M', last_updated) AS last_updated FROM accounts WHERE type = ?", 'liability')
+    assets = db.execute("SELECT name, balance, strftime('%m-%d %H:%M', last_updated) AS last_updated FROM accounts WHERE type = ? AND user_id = ?", 'asset', user_id)
+    liabilities = db.execute("SELECT name, balance, strftime('%m-%d %H:%M', last_updated) AS last_updated FROM accounts WHERE type = ? AND user_id = ?", 'liability', user_id)
 
-    asset_total = sum(a["balance"] for a in assets)
-    liability_total = sum(abs(l["balance"]) for l in liabilities) # abs value pie chart does not allow negative integers
+    asset_total = sum(a["balance"] or 0 for a in assets)
+    liability_total = sum(abs(l["balance"]) or 0 for l in liabilities) # abs value pie chart does not allow negative integers
 
-    pie_chart = networth_pie_chart(asset_total, liability_total)
+    # covers if user has no data
+    show_pie = (asset_total > 0 or liability_total > 0)
+
+    pie_chart = (networth_pie_chart(asset_total, liability_total) if show_pie else None)
+    
 
     history = db.execute(
         """
@@ -85,41 +101,99 @@ def index():
         GROUP BY month
         ORDER BY month
         """,
-        1
+        user_id
     )
 
-    months = [row["month"] for row in history]
-    values = [row["networth"] for row in history]
+    months = [row["month"] for row in history if row["networth"] is not None]
+    values = [row["networth"] for row in history if row["networth"] is not None]
 
-    line_chart = networth_line_chart(months, values) if history else None
+    line_chart = networth_line_chart(months, values) if months else None
 
     return render_template(
                             "index.html", 
                             pie_chart=pie_chart,
                             line_chart=line_chart,
-                           assets=assets, 
-                           liabilities=liabilities, 
-                           networth=networth
-                           )
+                            assets=assets, 
+                            liabilities=liabilities, 
+                            networth=networth
+                            )
 
-@app.route("/login")
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    return render_template("login.html")
+    # Forget any user_id
+    session.clear()
 
-@app.route("/register")
+    # User reached route via POST 
+    if request.method == "POST":
+        # Ensure username was submitted
+        if not request.form.get("username"):
+            return apology("Input a username")
+        elif not request.form.get("password"):
+            return apology("Input a password")
+        
+        # Query database for username
+        rows = db.execute("SELECT * from users WHERE username = ?", request.form.get("username"))
+
+        # Ensure username exists and password is correct
+        if len(rows) != 1 or not check_password_hash(
+            rows[0]["hash"], request.form.get("password")
+        ):
+            return apology("Invalid user and/or password")
+        
+        # Remember which user has logged in
+        session["user_id"] = rows[0]["id"]
+
+        # Redirect user to home page
+        return redirect("/")
+
+    return render_template("login.html")
+    
+@app.route("/logout")
+def logout():
+    session.clear()
+
+    return redirect("/")
+
+@app.route("/register", methods=["GET", "POST"])
 def register():
+    if request.method == "POST":
+        first_name = request.form.get("first_name")
+        last_name = request.form.get("last_name")
+        username = request.form.get("username")
+        password = request.form.get("password")
+        confirmation = request.form.get("confirmation")
+
+        if not username:
+            return apology("Must provider username")
+        if not password:
+            return apology("Must provide password")
+        if password != confirmation:
+            return apology("Passwords do not match")
+        
+        hash_password = generate_password_hash(password, method="scrypt", salt_length=16)
+
+        try:
+            db.execute("INSERT INTO users (username, hash, first_name, last_name) VALUES (?, ?, ?, ?)", username, hash_password, first_name, last_name)
+        except ValueError:
+            return apology("This username is taken")
+        
+        return redirect("/login")
+
     return render_template("register.html")
 
 @app.route("/accounts")
+@login_required
 def accounts():
     # Fetch all accounts for current user
-    user_id = 1
+    user_id = session["user_id"]
+
     accounts = db.execute("SELECT * FROM accounts WHERE user_id = ?", user_id)
 
     return render_template("accounts.html", accounts=accounts)
 
 @app.route("/account", methods=["GET", "POST"])
 @app.route("/account/<int:account_id>", methods=["GET", "POST"])
+@login_required
 def account(account_id=None):
     if account_id:
         # Edit existing account
@@ -185,11 +259,14 @@ def delete(account_id):
     return redirect("/accounts")
 
 @app.route("/history")
+@login_required
 def history():
+    user_id = session["user_id"]
+
     balances = db.execute(
         """
-        SELECT * FROM balances;
-        """
+        SELECT * FROM balances WHERE user_id = ?;
+        """, user_id
     )
     return render_template("history.html", balances=balances)
 
