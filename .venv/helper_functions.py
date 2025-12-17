@@ -1,6 +1,9 @@
 from flask import render_template, session, redirect
 from functools import wraps
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
+# Format currency
 def usd(value):
     """
     Format a numeric value as US dollars.
@@ -16,11 +19,12 @@ def usd(value):
     except (ValueError, TypeError):
         return "$0.00"
 
+# Show errors front end
 def apology(message):
     return render_template("apology.html", message=message)
 
+# Decorate routes to require login
 def login_required(f):
-    # Decorate routes to require login
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get("user_id") is None:
@@ -28,3 +32,14 @@ def login_required(f):
         return f(*args, **kwargs)
     
     return decorated_function
+
+# Convert to user's timezone
+def format_local_time(utc_string, tz):
+    if not utc_string:
+        return ""
+    
+    utc_dt = datetime.fromisoformat(utc_string)
+    utc_dt = utc_dt.replace(tzinfo=ZoneInfo("UTC"))
+
+    local_dt = utc_dt.astimezone(ZoneInfo(tz))
+    return local_dt.strftime("%m-%d %H:%M")

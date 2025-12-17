@@ -4,7 +4,7 @@ from flask import Flask, request, redirect, render_template, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helper_functions import usd, apology, login_required
+from helper_functions import usd, apology, login_required, format_local_time
 from api_handlers import get_balance_for_account
 from charts import networth_pie_chart, networth_line_chart
 
@@ -13,6 +13,7 @@ app = Flask(__name__)
 
 # Jinja filters
 app.jinja_env.filters["usd"] = usd
+app.jinja_env.filters["localtime"] = format_local_time
 
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
@@ -189,10 +190,13 @@ def accounts():
     # Fetch all accounts for current user
     user_id = session["user_id"]
 
-    assets = db.execute("SELECT id, name, category, balance, datetime(last_updated, 'localtime') AS last_updated, url FROM accounts WHERE user_id = ? AND type = ?", user_id, "asset")
-    liabilities = db.execute("SELECT id, name, category, balance, datetime(last_updated, 'localtime') AS last_updated, url FROM accounts WHERE user_id = ? AND type = ?", user_id, "liability")
+    # fetch timezone for user
+    user = db.execute("SELECT timezone FROM users WHERE id = ?", user_id)[0]
 
-    return render_template("accounts.html", assets=assets, liabilities=liabilities)
+    assets = db.execute("SELECT id, name, category, balance, last_updated, url FROM accounts WHERE user_id = ? AND type = ?", user_id, "asset")
+    liabilities = db.execute("SELECT id, name, category, balance, last_updated, url FROM accounts WHERE user_id = ? AND type = ?", user_id, "liability")
+
+    return render_template("accounts.html", assets=assets, liabilities=liabilities, timezone=user["timezone"])
 
 @app.route("/account", methods=["GET", "POST"])
 @app.route("/account/<int:account_id>", methods=["GET", "POST"])
@@ -233,7 +237,7 @@ def account(account_id=None):
             db.execute(
                 """
                 UPDATE accounts
-                SET name=?, type=?, category=?, source_type=?, api_provider=?, account_identifier=?, balance=?, url=?
+                SET name=?, type=?, category=?, source_type=?, api_provider=?, account_identifier=?, balance=?, url=?, last_updated = CURRENT_TIMESTAMP
                 WHERE id=?
                 """,
                 name, type, category, source_type, api_provider, account_identifier, balance, url, account_id

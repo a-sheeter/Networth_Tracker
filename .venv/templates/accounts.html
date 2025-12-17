@@ -20,7 +20,7 @@
         <td>{{ a.name }}</td>
         <td>{{ a.category }}</td>
         <td>{{ a.balance | usd }}</td>
-        <td>{{ a.last_updated }}</td>
+        <td>{{ a.last_updated | localtime(timezone) }}</td>
         <td><a target="_blank" href="{{ a.url }}">Go to website</a></td>
         <td>
             <!-- Edit link -->
