@@ -27,7 +27,7 @@
 {% else %}
 <p>No liabilities yet</p>
 {% endif %}
-<p>Networth calculation: {{ networth | usd }}</p>
+<p>Net Worth Value: {{ networth | usd }}</p>
 {% if line_chart %}
 <img src="data:image/png;base64, {{ line_chart }}" alt="Net worth line chart">
 {% else %}

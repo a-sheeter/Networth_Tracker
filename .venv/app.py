@@ -56,24 +56,33 @@ def update_networth():
     user_id = session["user_id"]
 
     if request.method == "POST":
-        # update all
-        if request.form.get("update_all"):
-            for key, value in request.form.items():
-                if key.startswith("account_"):
-                    account_id = key.replace("account_", "")
-                    db.execute("UPDATE accounts SET balance = ?, last_updated = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?", float(value), account_id, user_id)
-        # update a single account
-        elif request.form.get("account_id"):
-            account_id = request.form.get("account_id")
-            balance = request.form.get("balance")
+        for key, value in request.form.items():
+            if key.startswith("account_"):
+                account_id = key.replace("account_", "")
+                try:
+                    balance = float(value)
+                except ValueError:
+                    continue
 
-            db.execute("UPDATE accounts SET balance = ?, last_updated = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?", float(balance), account_id, user_id)
-            
+                db.execute(
+                    """
+                    UPDATE accounts
+                    SET balance=?, last_updated=CURRENT_TIMESTAMP WHERE id=? AND user_id=?
+                    """,
+                    balance,
+                    account_id,
+                    user_id
+                )
+
         return redirect("/")
+    
+    # fetch timezone for user
+    user = db.execute("SELECT timezone FROM users WHERE id = ?", user_id)[0]
 
-    accounts = db.execute("SELECT id, name, balance FROM accounts WHERE user_id = ? ORDER BY name", user_id)
+    assets = db.execute("SELECT id, name, balance, last_updated FROM accounts WHERE user_id = ? AND type = ?", user_id, "asset")
+    liabilities = db.execute("SELECT id, name, balance, last_updated FROM accounts WHERE user_id = ? AND type = ?", user_id, "liability")
 
-    return render_template("update_networth.html", accounts=accounts)
+    return render_template("update_networth.html", assets=assets, liabilities=liabilities, timezone=user["timezone"])
 
 
 @app.route("/")
