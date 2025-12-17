@@ -5,29 +5,24 @@
 {% block content %}
 
 <h1>Hello, {{user.first_name}}!</h1>
-<a href="/account">Add an account</a>
-<a href="/update-networth">Update net worth</a>
-<p>Assets: {{ asset_total | usd }}</p>
-{% if assets %}
-<ul>
-    {% for a in assets %}
-    <li>{{ a.name }} | {{ a.balance | usd }} | {{ a.last_updated }}</li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>No assets yet</p>
-{% endif %}
-<p>Liabilities: {{ liability_total | usd}}</p>
-{% if liabilities %}
-<ul>
-    {% for l in liabilities %}
-    <li>{{ l.name }} | {{ l.balance | usd }} | {{ l.last_updated }}</li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>No liabilities yet</p>
-{% endif %}
+<p>Today is: {{ today }}</p>
 <p>Net Worth Value: {{ networth | usd }}</p>
+<a href="/update-networth">Update net worth</a>
+<p>Assets: 
+    {% if asset_total %}
+    {{ asset_total | usd }}
+    {% else %}
+    No assets yet. <a href="/account">Add an account</a>.
+    {% endif %}
+</p>
+
+<p>Liabilities: 
+    {% if liability_total %}
+    {{ liability_total | usd}}
+    {% else %}
+    No liabilities yet. <a href="/account">Add an account</a>.
+    {% endif %}
+</p>
 {% if line_chart %}
 <img src="data:image/png;base64, {{ line_chart }}" alt="Net worth line chart">
 {% else %}

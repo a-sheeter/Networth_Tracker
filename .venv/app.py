@@ -3,6 +3,7 @@ from cs50 import SQL
 from flask import Flask, request, redirect, render_template, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
+from datetime import date
 
 from helper_functions import usd, apology, login_required, format_local_time, timezones
 from api_handlers import get_balance_for_account
@@ -88,10 +89,15 @@ def update_networth():
 @app.route("/")
 @login_required
 def index():
+    # User info
     user_id = session["user_id"]
-
     user = db.execute("SELECT * FROM users WHERE id = ?", user_id)[0]
 
+    # Get today's date
+    today = date.today()
+    today_frmt = today.strftime("%m/%d/%y")
+
+    # Calculate networth on load
     networth = calculate_networth()
 
     assets = db.execute("SELECT name, balance, strftime('%m-%d at %H:%M', last_updated) AS last_updated FROM accounts WHERE type = ? AND user_id = ?", 'asset', user_id)
@@ -123,6 +129,7 @@ def index():
 
     return render_template(
                             "index.html", 
+                            today=today_frmt,
                             user=user,
                             pie_chart=pie_chart,
                             line_chart=line_chart,
