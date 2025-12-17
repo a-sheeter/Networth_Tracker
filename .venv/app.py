@@ -189,9 +189,10 @@ def accounts():
     # Fetch all accounts for current user
     user_id = session["user_id"]
 
-    accounts = db.execute("SELECT * FROM accounts WHERE user_id = ?", user_id)
+    assets = db.execute("SELECT id, name, category, balance, datetime(last_updated, 'localtime') AS last_updated, url FROM accounts WHERE user_id = ? AND type = ?", user_id, "asset")
+    liabilities = db.execute("SELECT id, name, category, balance, datetime(last_updated, 'localtime') AS last_updated, url FROM accounts WHERE user_id = ? AND type = ?", user_id, "liability")
 
-    return render_template("accounts.html", accounts=accounts)
+    return render_template("accounts.html", assets=assets, liabilities=liabilities)
 
 @app.route("/account", methods=["GET", "POST"])
 @app.route("/account/<int:account_id>", methods=["GET", "POST"])
