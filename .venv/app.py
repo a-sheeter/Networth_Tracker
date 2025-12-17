@@ -272,10 +272,12 @@ def delete(account_id):
 def history():
     user_id = session["user_id"]
 
+    user = db.execute("SELECT timezone FROM users WHERE id = ?", user_id)[0]
+
     balances = db.execute(
         """
-        SELECT * FROM balances WHERE user_id = ?;
+        SELECT * FROM balances WHERE user_id = ? ORDER BY timestamp DESC;
         """, user_id
     )
-    return render_template("history.html", balances=balances)
+    return render_template("history.html", balances=balances, timezone=user["timezone"])
 
