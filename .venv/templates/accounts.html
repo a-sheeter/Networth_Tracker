@@ -52,7 +52,7 @@
         <td>{{ l.name }}</td>
         <td>{{ l.category }}</td>
         <td>{{ l.balance | usd }}</td>
-        <td>{{ l.last_updated }}</td>
+        <td>{{ l.last_updated | localtime(timezone) }}</td>
         <td><a target="_blank" href="{{ l.url }}">Go to website</a></td>
         <td>
             <!-- Edit link -->

@@ -43,3 +43,38 @@ def format_local_time(utc_string, tz):
 
     local_dt = utc_dt.astimezone(ZoneInfo(tz))
     return local_dt.strftime("%m-%d %H:%M")
+
+# List of timezones 
+timezones = [
+    ("UTC", "UTC"),
+    
+    # North America
+    ("America/New_York", "Eastern Time (New York)"),
+    ("America/Chicago", "Central Time (Chicago)"),
+    ("America/Denver", "Mountain Time (Denver)"),
+    ("America/Phoenix", "Mountain Time (Phoenix, no DST)"),
+    ("America/Los_Angeles", "Pacific Time (Los Angeles)"),
+    ("America/Anchorage", "Alaska"),
+    ("America/Halifax", "Atlantic Time (Halifax)"),
+    
+    # Europe
+    ("Europe/London", "London"),
+    ("Europe/Paris", "Paris"),
+    ("Europe/Berlin", "Berlin"),
+    ("Europe/Moscow", "Moscow"),
+    
+    # Asia
+    ("Asia/Tokyo", "Tokyo"),
+    ("Asia/Shanghai", "Shanghai"),
+    ("Asia/Kolkata", "India Standard Time (Kolkata)"),
+    ("Asia/Dubai", "Dubai"),
+    
+    # Australia & Oceania
+    ("Australia/Sydney", "Sydney"),
+    ("Australia/Perth", "Perth"),
+    ("Pacific/Auckland", "Auckland"),
+    
+    # Africa
+    ("Africa/Johannesburg", "Johannesburg"),
+    ("Africa/Cairo", "Cairo")
+]

@@ -1,33 +1,39 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Register
+Register
 {% endblock %}
 
 {% block content %}
 <form action="/register" method="post">
     <div class="mb-3">
         <label for="first_name">First name</label>
-        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="first_name"
-            placeholder="First name" type="text">
+        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="first_name" type="text">
     </div>
     <div class="mb-3">
         <label for="last_name">Last name</label>
-        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="last_name"
-            placeholder="Last name" type="text">
+        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="last_name" type="text">
     </div>
     <div class="mb-3">
         <label for="username">Username</label>
-        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" placeholder="Username"
-            type="text">
+        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" type="text">
+    </div>
+    <div class="mb-3">
+        <label for="timezone">Timezone</label>
+        <select name="timezone" class="form-control">
+            {% for tz_value, tz_label in timezones %}
+            <option value="{{ tz_value }}">{{ tz_label }}</option>
+            {% endfor %}
+        </select>
+
     </div>
     <div class="mb-3">
         <label for="password">Password</label>
-        <input class="form-control mx-auto w-auto" name="password" placeholder="Password" type="password">
+        <input class="form-control mx-auto w-auto" name="password" type="password">
     </div>
-        <div class="mb-3">
+    <div class="mb-3">
         <label for="confirmation">Confirm password</label>
-        <input class="form-control mx-auto w-auto" name="confirmation" placeholder="Confirm password" type="password">
+        <input class="form-control mx-auto w-auto" name="confirmation" type="password">
     </div>
     <button class="btn btn-primary" type="submit">Register</button>
 </form>

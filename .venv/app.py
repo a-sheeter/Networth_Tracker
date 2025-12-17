@@ -4,7 +4,7 @@ from flask import Flask, request, redirect, render_template, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helper_functions import usd, apology, login_required, format_local_time
+from helper_functions import usd, apology, login_required, format_local_time, timezones
 from api_handlers import get_balance_for_account
 from charts import networth_pie_chart, networth_line_chart
 
@@ -165,6 +165,7 @@ def register():
         username = request.form.get("username")
         password = request.form.get("password")
         confirmation = request.form.get("confirmation")
+        timezone = request.form.get("timezone")
 
         if not username:
             return apology("Must provider username")
@@ -176,13 +177,13 @@ def register():
         hash_password = generate_password_hash(password, method="scrypt", salt_length=16)
 
         try:
-            db.execute("INSERT INTO users (username, hash, first_name, last_name) VALUES (?, ?, ?, ?)", username, hash_password, first_name, last_name)
+            db.execute("INSERT INTO users (username, hash, first_name, last_name, timezone) VALUES (?, ?, ?, ?, ?)", username, hash_password, first_name, last_name, timezone)
         except ValueError:
             return apology("This username is taken")
         
         return redirect("/login")
 
-    return render_template("register.html")
+    return render_template("register.html", timezones=timezones)
 
 @app.route("/accounts")
 @login_required
