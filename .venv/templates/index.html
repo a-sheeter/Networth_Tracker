@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<h1>This is my dashboard</h1>
+<h1>Hello, {{user.first_name}}!</h1>
 <a href="/account">Add an account</a>
 <a href="/update-networth">Update net worth</a>
 <p>Assets: {{ asset_total | usd }}</p>

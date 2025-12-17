@@ -81,6 +81,8 @@ def update_networth():
 def index():
     user_id = session["user_id"]
 
+    user = db.execute("SELECT * FROM users WHERE id = ?", user_id)[0]
+
     networth = calculate_networth()
 
     assets = db.execute("SELECT name, balance, strftime('%m-%d at %H:%M', last_updated) AS last_updated FROM accounts WHERE type = ? AND user_id = ?", 'asset', user_id)
@@ -112,6 +114,7 @@ def index():
 
     return render_template(
                             "index.html", 
+                            user=user,
                             pie_chart=pie_chart,
                             line_chart=line_chart,
                             assets=assets, 
@@ -184,6 +187,59 @@ def register():
         return redirect("/login")
 
     return render_template("register.html", timezones=timezones)
+
+@app.route("/profile", methods=["GET", "POST"])
+@login_required
+def profile():
+    user_id = session["user_id"]
+
+    # Fetch current user info
+    user = db.execute("SELECT * FROM users WHERE id = ?", user_id)[0]
+
+    if request.method == "POST":
+        first_name = request.form.get("first_name")
+        last_name = request.form.get("last_name")
+        username = request.form.get("username")
+        password = request.form.get("password")
+        confirmation = request.form.get("confirmation")
+        timezone = request.form.get("timezone")
+
+        # Validation
+        if not username:
+            return apology("Input username")
+        if password and password != confirmation:
+            return apology("Passwords do not match")
+        
+        # Check if username is available
+        rows = db.execute("SELECT * FROM users WHERE username = ? AND id != ?", username, user_id)
+        if len(rows) > 0:
+            return apology("This username is already taken")
+        
+        # Handle password hash if provided
+        if password:
+            hash_password = generate_password_hash(password, method="scrypt", salt_length=16)
+            db.execute(
+                """
+                UPDATE users
+                SET first_name=?, last_name=?, username=?, hash=?, timezone=?
+                WHERE id = ?
+                """,
+                first_name, last_name, username, hash_password, timezone, user_id
+            )
+        else:
+            db.execute(
+                """
+                UPDATE users
+                SET first_name=?, last_name=?, username=?, timezone=?
+                WHERE id = ?
+                """,
+                first_name, last_name, username, timezone, user_id
+            )
+
+        return redirect("/")
+    
+    # GET request:show prefilled form
+    return render_template("profile.html", user=user, timezones=timezones)
 
 @app.route("/accounts")
 @login_required
