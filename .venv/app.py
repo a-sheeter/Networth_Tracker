@@ -4,6 +4,7 @@ from flask import Flask, request, redirect, render_template, session
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import date
+from dateutil.relativedelta import relativedelta
 
 from helper_functions import usd, apology, login_required, format_local_time, timezones
 from api_handlers import get_balance_for_account
@@ -97,24 +98,36 @@ def index():
     today = date.today()
     today_frmt = today.strftime("%m/%d/%y")
 
+    # Get current month and previous month
+    current_month = today.strftime("%Y-%m")
+    previous_month = (today - relativedelta(months=1)).strftime("%Y-%m")
+
     # Calculate networth on load
     networth = calculate_networth()
 
+    # Grabs assets and liabilities separately
     assets = db.execute("SELECT name, balance, strftime('%m-%d at %H:%M', last_updated) AS last_updated FROM accounts WHERE type = ? AND user_id = ?", 'asset', user_id)
     liabilities = db.execute("SELECT name, balance, strftime('%m-%d at %H:%M', last_updated) AS last_updated FROM accounts WHERE type = ? AND user_id = ?", 'liability', user_id)
 
+    # Calculates totals serverside
     asset_total = sum(a["balance"] or 0 for a in assets)
     liability_total = sum(abs(l["balance"]) or 0 for l in liabilities) # abs value pie chart does not allow negative integers
 
+    # Chart logic
     # covers if user has no data
     show_pie = (asset_total > 0 or liability_total > 0)
 
     pie_chart = (networth_pie_chart(asset_total, liability_total) if show_pie else None)
     
+    months = [row["month"] for row in history if row["networth"] is not None]
+    values = [row["networth"] for row in history if row["networth"] is not None]
 
+    line_chart = networth_line_chart(months, values) if values[0] > 0 else None
+
+    # Grabs historical data from balances
     history = db.execute(
         """
-        SELECT strftime('%Y-%m', timestamp) AS month, AVG(value) AS networth FROM balances
+        SELECT strftime('%Y-%m', timestamp) AS month, timestamp, AVG(value) AS networth FROM balances
         WHERE user_id = ?
         GROUP BY month
         ORDER BY month
@@ -122,13 +135,33 @@ def index():
         user_id
     )
 
-    months = [row["month"] for row in history if row["networth"] is not None]
-    values = [row["networth"] for row in history if row["networth"] is not None]
+    # Calculates month over month change
+    monthly_networth = {
+        row["month"]: row["networth"]
+        for row in history
+        if row["networth"] is not None
+    }
 
-    line_chart = networth_line_chart(months, values) if values[0] > 0 else None
+    current_value = monthly_networth.get(current_month)
+    previous_value = monthly_networth.get(previous_month)
+
+    mom_change = None
+    mom_label = None
+    
+    if current_value is not None and previous_value is not None and previous_value != 0:
+        mom_change = ((current_value - previous_value) / abs(previous_value)) * 100
+
+        direction = "up" if mom_change >= 0 else "down"
+        mom_label = f"{direction} {abs(mom_change):.0f}% vs last month"
+
+    # Last updated logic
+    last_updated = db.execute("SELECT timestamp FROM balances WHERE user_id = ? ORDER BY timestamp DESC", user_id)[0]
+    last_updated_date = last_updated["timestamp"]
 
     return render_template(
                             "index.html", 
+                            last_updated=last_updated_date,
+                            timezone=user["timezone"],
                             today=today_frmt,
                             user=user,
                             pie_chart=pie_chart,
@@ -137,7 +170,8 @@ def index():
                             asset_total=asset_total,
                             liabilities=liabilities,
                             liability_total=liability_total, 
-                            networth=networth
+                            networth=networth,
+                            mom_label=mom_label
                             )
 
 @app.route("/login", methods=["GET", "POST"])
