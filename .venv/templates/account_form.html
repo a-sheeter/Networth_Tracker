@@ -4,56 +4,60 @@
 
 {% block content %}
 
-<h1>{{ 'Edit account' if account else 'Add an account'}}</h1>
+<div class="desktop-container">
+    <div class="center">
+        <h1>{{ 'Edit account' if account else 'Add an account'}}</h1>
+    </div>
 
-<form method="POST">
-    <label for="name">Name:</label>
-    <input type="text" id="name" name="name" value="{{ account.name if account else '' }}" required>
-    <br>
+    <form method="POST">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" value="{{ account.name if account else '' }}" required>
+        <br>
 
-    <label for="type">Type:</label>
-    <select id="type" name="type" required>
-        <option value="asset" {% if account and account.type=='asset' %}selected{% endif %}>Asset</option>
-        <option value="liability" {% if account and account.type=='liability' %}selected{% endif %}>Liability</option>
-    </select>
-    <br>
+        <label for="type">Type:</label>
+        <select id="type" name="type" required>
+            <option value="asset" {% if account and account.type=='asset' %}selected{% endif %}>Asset</option>
+            <option value="liability" {% if account and account.type=='liability' %}selected{% endif %}>Liability</option>
+        </select>
+        <br>
 
-    <label for="category">Category:</label>
-    <input type="text" id="category" name="category" value="{{ account.category if account else '' }}">
-    <br>
+        <label for="category">Category:</label>
+        <input type="text" id="category" name="category" value="{{ account.category if account else '' }}">
+        <br>
 
-    <label for="source_type">Source Type:</label>
-    <select id="source_type" name="source_type" required>
-        <option value="manual" {% if account and account.source_type=="manual" %} selected {% endif %}>
-            Manual
-        </option>
+        <label for="source_type">Source Type:</label>
+        <select id="source_type" name="source_type" required>
+            <option value="manual" {% if account and account.source_type=="manual" %} selected {% endif %}>
+                Manual
+            </option>
 
-        <option value="api" {% if account and account.source_type=="api" %} selected {% endif %}>
-            API
-        </option>
-    </select>
-    <br>
+            <option value="api" {% if account and account.source_type=="api" %} selected {% endif %}>
+                API
+            </option>
+        </select>
+        <br>
 
 
-    <label for="api_provider">API Provider:</label>
-    <input type="text" id="api_provider" name="api_provider" value="{{ account.api_provider if account else '' }}">
-    <br>
+        <label for="api_provider">API Provider:</label>
+        <input type="text" id="api_provider" name="api_provider" value="{{ account.api_provider if account else '' }}">
+        <br>
 
-    <label for="account_identifier">Account Identifier:</label>
-    <input type="text" id="account_identifier" name="account_identifier"
-        value="{{ account.account_identifier if account else '' }}">
-    <br>
+        <label for="account_identifier">Account Identifier:</label>
+        <input type="text" id="account_identifier" name="account_identifier"
+            value="{{ account.account_identifier if account else '' }}">
+        <br>
 
-    <label for="url">Url to login:</label>
-    <input type="text" id="url" name="url"
-        value="{{ account.url if url else '' }}">
-    <br>
+        <label for="url">Url to login:</label>
+        <input type="text" id="url" name="url"
+            value="{{ account.url if url else '' }}">
+        <br>
 
-    <label for="balance">Balance:</label>
-    <input type="text" id="balance" name="balance" value="{{ account.balance if account else '' }}">
-    <br>
+        <label for="balance">Balance:</label>
+        <input type="text" id="balance" name="balance" value="{{ account.balance if account else '' }}">
+        <br>
 
-    <button type="submit">{{ 'Save Changes' if account else 'Add Account' }}</button>
-</form>
+        <button class="main-btn btn" type="submit">{{ 'Save Changes' if account else 'Add Account' }}</button>
+    </form>
+</div>
 
 {% endblock %}
