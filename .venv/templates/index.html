@@ -4,37 +4,44 @@
 
 {% block content %}
 
-<h1>Hello, {{user.first_name}}!</h1>
-<p>Today is: {{ today }}</p>
-<p>Net Worth Value: {{ networth | usd }}</p>
-{% if mom_label %}
-<p>{{ mom_label }}</p>
-{% endif %}
-<a href="/update-networth">Update net worth</a>
-<p>Last updated: {{ last_updated | localtime(timezone) }}</p>
-<p>Assets: 
-    {% if asset_total %}
-    {{ asset_total | usd }}
-    {% else %}
-    No assets yet. <a href="/account">Add an account</a>.
-    {% endif %}
-</p>
+<div class="desktop-container">
+    <div class="space-between">
+        <h1>Hello, {{user.first_name}}!</h1>
+        <p>Today is: {{ today }}</p>
+    </div>
 
-<p>Liabilities: 
-    {% if liability_total %}
-    {{ liability_total | usd}}
-    {% else %}
-    No liabilities yet. <a href="/account">Add an account</a>.
+
+    <p>Net Worth Value</p>
+    <a class="main-btn btn" href="/update-networth">Update Net Worth</a>
+    {{ networth | usd }}
+    {% if mom_label %}
+    <p>{{ mom_label }}</p>
     {% endif %}
-</p>
-{% if line_chart %}
-<img src="data:image/png;base64, {{ line_chart }}" alt="Net worth line chart">
-{% else %}
-<p>No net worth history yet.</p>
-{% endif %}
-{% if pie_chart %}
-<img src="data:image/png;base64, {{ pie_chart }}" alt="Networth pie chart">
-{% else %}
-<p>No net worth history yet.</p>
+    <p>Last updated: {{ last_updated | localtime(timezone) }}</p>
+    <p>Assets: 
+        {% if asset_total %}
+        {{ asset_total | usd }}
+        {% else %}
+        No assets yet. <a href="/account">Add an account</a>.
+        {% endif %}
+    </p>
+
+    <p>Liabilities: 
+        {% if liability_total %}
+        {{ liability_total | usd}}
+        {% else %}
+        No liabilities yet. <a href="/account">Add an account</a>.
+        {% endif %}
+    </p>
+    {% if line_chart %}
+    <img src="data:image/png;base64, {{ line_chart }}" alt="Net worth line chart">
+    {% else %}
+    <p>No net worth history yet.</p>
+    {% endif %}
+    {% if pie_chart %}
+    <img src="data:image/png;base64, {{ pie_chart }}" alt="Networth pie chart">
+    {% else %}
+    <p>No net worth history yet.</p>
+</div>
 {% endif %}
 {% endblock %}

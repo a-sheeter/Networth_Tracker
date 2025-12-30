@@ -5,38 +5,40 @@ Register
 {% endblock %}
 
 {% block content %}
-<h1>Register User</h1>
-<p>Already have an account? <a href="/login">Log In</a></p>
-<form action="/register" method="post">
-    <div class="mb-3">
-        <label for="first_name">First name</label>
-        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="first_name" type="text">
-    </div>
-    <div class="mb-3">
-        <label for="last_name">Last name</label>
-        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="last_name" type="text">
-    </div>
-    <div class="mb-3">
-        <label for="username">Username</label>
-        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" type="text">
-    </div>
-    <div class="mb-3">
-        <label for="timezone">Timezone</label>
-        <select name="timezone" class="form-control">
-            {% for tz_value, tz_label in timezones %}
-            <option value="{{ tz_value }}">{{ tz_label }}</option>
-            {% endfor %}
-        </select>
+<div class="center full-height">
+    <h1>Register User</h1>
+    <p>Already have an account? <a style="text-decoration: underline;" href="/login">Log In</a></p>
+    <form action="/register" method="post" style="text-align: left;margin-top:25px;">
+        <div class="mb-3">
+            <label for="first_name">First name</label>
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="first_name" type="text">
+        </div>
+        <div class="mb-3">
+            <label for="last_name">Last name</label>
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="last_name" type="text">
+        </div>
+        <div class="mb-3">
+            <label for="username">Username</label>
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" type="text">
+        </div>
+        <div class="mb-3">
+            <label for="timezone">Timezone</label><br>
+            <select name="timezone" class="form-control">
+                {% for tz_value, tz_label in timezones %}
+                <option value="{{ tz_value }}">{{ tz_label }}</option>
+                {% endfor %}
+            </select>
 
-    </div>
-    <div class="mb-3">
-        <label for="password">Password</label>
-        <input class="form-control mx-auto w-auto" name="password" type="password">
-    </div>
-    <div class="mb-3">
-        <label for="confirmation">Confirm password</label>
-        <input class="form-control mx-auto w-auto" name="confirmation" type="password">
-    </div>
-    <button class="btn btn-primary" type="submit">Register</button>
-</form>
+        </div>
+        <div class="mb-3">
+            <label for="password">Password</label>
+            <input class="form-control mx-auto w-auto" name="password" type="password">
+        </div>
+        <div class="mb-3">
+            <label for="confirmation">Confirm password</label>
+            <input class="form-control mx-auto w-auto" name="confirmation" type="password">
+        </div>
+        <button class="btn main-btn" type="submit">Register</button>
+    </form>
+</div>
 {% endblock %}

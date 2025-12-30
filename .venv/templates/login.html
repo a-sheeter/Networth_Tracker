@@ -1,23 +1,27 @@
-{% extends "layout.html" %}
-
-{% block title %}
-Log In
-{% endblock %}
-
-{% block content %}
-<h2>Welcome to the</h2>
-<h1> Net Worth Tracker</h1>
-<form action="/login" method="post">
-    <div class="mb-3">
-        <label for="username">Username</label>
-        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" placeholder="Username"
-            type="text">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %} {% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="center full-height">
+        <h2>Welcome to the</h2>
+        <h1 class="green-text xl-text" style="max-width:500px;"> Net Worth Tracker</h1>
+        <form action="/login" method="post" style="margin-top:25px;">
+            <div class="text-align-left">
+                <label for="username">Username</label><br>
+                <input autocomplete="off" autofocus name="username" type="text">
+            <div class="mb-3">
+                <label for="password">Password</label><br>
+                <input class="form-control mx-auto w-auto" name="password" type="password">
+            </div>
+            </div>
+            <div style="margin: 15px 0;">Don't have an account? <a class="underline" href="/register">Register Now</a></div>
+            <button class="btn main-btn" type="submit">Log In</button>
+        </form>
     </div>
-    <div class="mb-3">
-        <label for="password">Password</label>
-        <input class="form-control mx-auto w-auto" name="password" placeholder="Password" type="password">
-    </div>
-    <div>Don't have an account? <a href="/register">Register Now</a></div>
-    <button class="btn btn-primary" type="submit">Log In</button>
-</form>
-{% endblock %}
+</body>
+</html>

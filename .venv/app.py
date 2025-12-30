@@ -10,6 +10,9 @@ from helper_functions import usd, apology, login_required, format_local_time, ti
 from api_handlers import get_balance_for_account
 from charts import networth_pie_chart, networth_line_chart
 
+# Services
+from services.networth_service import calculate_networth
+
 # Configure application
 app = Flask(__name__)
 
@@ -24,33 +27,6 @@ Session(app)
 
 # Configure cs50 library to use SQlite database
 db = SQL("sqlite:///tracker.db")
-
-# Networth calculation
-def calculate_networth():
-    user_id = session["user_id"]
-    # Get all accounts
-    accounts = db.execute("SELECT * FROM accounts WHERE user_id = ?", user_id)
-
-    for acct in accounts:
-        if acct["source_type"] == "api":
-            latest = get_balance_for_account(acct)
-
-            if latest is not None:
-                db.execute("UPDATE accounts SET balance = ? WHERE id = ? AND user_id = ?", latest, acct["id"], user_id)
-
-    # After updating balances, recompute totals
-    assets = db.execute("SELECT name, balance FROM accounts WHERE type = ? AND user_id = ?", 'asset', user_id)
-    liabilities = db.execute("SELECT name, balance FROM accounts WHERE type = ? AND user_id = ?", 'liability', user_id)
-
-    asset_total = sum(float(a["balance"]) or 0 for a in assets)
-    liability_total = sum(float(l["balance"]) or 0 for l in liabilities)
-
-    networth = asset_total - abs(liability_total)
-
-    # update history 
-    db.execute("INSERT INTO balances (user_id, value, assets, liabilities) VALUES (?, ?, ?, ?)", user_id, networth, asset_total, liability_total)
-
-    return networth
 
 
 @app.route("/update-networth", methods=["GET", "POST"])
@@ -103,7 +79,7 @@ def index():
     previous_month = (today - relativedelta(months=1)).strftime("%Y-%m")
 
     # Calculate networth on load
-    networth = calculate_networth()
+    networth = calculate_networth(db, user_id)
 
     # Grabs assets and liabilities separately
     assets = db.execute("SELECT name, balance, strftime('%m-%d at %H:%M', last_updated) AS last_updated FROM accounts WHERE type = ? AND user_id = ?", 'asset', user_id)
@@ -112,17 +88,6 @@ def index():
     # Calculates totals serverside
     asset_total = sum(a["balance"] or 0 for a in assets)
     liability_total = sum(abs(l["balance"]) or 0 for l in liabilities) # abs value pie chart does not allow negative integers
-
-    # Chart logic
-    # covers if user has no data
-    show_pie = (asset_total > 0 or liability_total > 0)
-
-    pie_chart = (networth_pie_chart(asset_total, liability_total) if show_pie else None)
-    
-    months = [row["month"] for row in history if row["networth"] is not None]
-    values = [row["networth"] for row in history if row["networth"] is not None]
-
-    line_chart = networth_line_chart(months, values) if values[0] > 0 else None
 
     # Grabs historical data from balances
     history = db.execute(
@@ -134,6 +99,17 @@ def index():
         """,
         user_id
     )
+
+    # Chart logic
+    # covers if user has no data
+    show_pie = (asset_total > 0 or liability_total > 0)
+
+    pie_chart = (networth_pie_chart(asset_total, liability_total) if show_pie else None)
+    
+    months = [row["month"] for row in history if row["networth"] is not None]
+    values = [row["networth"] for row in history if row["networth"] is not None]
+
+    line_chart = networth_line_chart(months, values) if values[0] > 0 else None
 
     # Calculates month over month change
     monthly_networth = {
