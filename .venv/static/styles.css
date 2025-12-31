@@ -15,7 +15,7 @@ body {
 .desktop-container {
     max-width:1350px;
     margin: 0 auto;
-    padding: 15px 45px;
+    padding: 45px;
 }
 
 .center {
@@ -37,6 +37,19 @@ body {
     height: 90vh;
 }
 
+/*grid*/
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+/*widgets*/
+.gray-widget {
+    background:var(--main-gray);
+    padding: 25px;
+    border-radius: 10px;
+}
+
 /*Font styles*/
 h1, h2 {
     margin:0;
@@ -44,6 +57,11 @@ h1, h2 {
 
 .green-text {
     color: var(--main-green);
+}
+
+.value-text {
+    font-size: 40px;
+    font-weight:700;
 }
 
 .xl-text {
@@ -61,11 +79,13 @@ h1, h2 {
 /*Nav*/
 nav {
     display: flex;
+    margin: 0 auto;
+    max-width: 1350px;
     justify-content: space-between;
     align-items:center;
     align-content:center;
     border-bottom: 1px solid var(--main-gray);
-    padding: 15px 25px;
+    padding: 15px 45px;
 }
 
 nav > div {
@@ -152,6 +172,7 @@ select {
 input {
     width: 100%;
     height:25px;
+    padding: 12px 0 5px;
     margin-bottom: 20px;
     font-size:16px;
     background:none;

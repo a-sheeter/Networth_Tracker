@@ -4,21 +4,23 @@
 
 {% block content %}
 
-<h1>Net Worth History</h1>
-<table>
-    <tr>
-        <th>Total Value</th>
-        <th>Assets</th>
-        <th>Liabilities</th>
-        <th>Timestamp</th>
-    </tr>
-    {% for balance in balances %}
-    <tr>
-        <td>{{ balance.value | usd }}</td>
-        <td>{{ balance.assets | usd}}</td>
-        <td>{{ balance.liabilities | usd }}</td>
-        <td>{{ balance.timestamp | localtime(timezone) }}</td>
-    </tr>
-    {% endfor %}
-</table>
+<div class="desktop-container">
+    <h1 class="center" style="margin-bottom:15px;">Net Worth History</h1>
+    <table>
+        <tr>
+            <th>Total Value</th>
+            <th>Assets</th>
+            <th>Liabilities</th>
+            <th>Timestamp</th>
+        </tr>
+        {% for balance in balances %}
+        <tr>
+            <td style="font-weight: 700;color:var(--main-green);">{{ balance.value | usd }}</td>
+            <td>{{ balance.assets | usd}}</td>
+            <td>{{ balance.liabilities | usd }}</td>
+            <td>{{ balance.timestamp | localtime(timezone) }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
 {% endblock %}

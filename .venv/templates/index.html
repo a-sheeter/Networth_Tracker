@@ -10,38 +10,55 @@
         <p>Today is: {{ today }}</p>
     </div>
 
-
-    <p>Net Worth Value</p>
-    <a class="main-btn btn" href="/update-networth">Update Net Worth</a>
-    {{ networth | usd }}
-    {% if mom_label %}
-    <p>{{ mom_label }}</p>
-    {% endif %}
-    <p>Last updated: {{ last_updated | localtime(timezone) }}</p>
-    <p>Assets: 
+    <div class="grid-container">
+    <div class="gray-widget">
+        <h3>Net Worth Value</h3>
+        <button class="main-btn btn"><a href="/update-networth">Update Net Worth</a></button>
+        <div class="value-text">{{ networth | usd }}</div>
+        {% if mom_label %}
+        <p>{{ mom_label }}</p>
+        {% endif %}
+        <p>Last updated: {{ last_updated | localtime(timezone) }}</p>
+    </div>
+    <div class="gray-widget">
+    <h3>Assets</h3>
         {% if asset_total %}
-        {{ asset_total | usd }}
+        <div class="value-text">{{ asset_total | usd }}</div>
         {% else %}
         No assets yet. <a href="/account">Add an account</a>.
         {% endif %}
-    </p>
+    
+    <a class="green-link" href="/accounts">View details</a>
+    </div>
 
-    <p>Liabilities: 
-        {% if liability_total %}
-        {{ liability_total | usd}}
+    <div class="gray-widget">
+        <h3>Liabilities</h3>
+            {% if liability_total %}
+            <div class="value-text">{{ liability_total | usd}}</div>
+            {% else %}
+            No liabilities yet. <a href="/account">Add an account</a>.
+            {% endif %}
+        
+        <a class="green-link" href="/accounts#liabilities">View details</a>
+    </div>
+    </div>
+
+    <div class="gray-widget">
+        <h3>Net Worth Over Time</h3>
+        {% if line_chart %}
+        <img src="data:image/png;base64, {{ line_chart }}" alt="Net worth line chart">
         {% else %}
-        No liabilities yet. <a href="/account">Add an account</a>.
+        <p>No net worth history yet.</p>
         {% endif %}
-    </p>
-    {% if line_chart %}
-    <img src="data:image/png;base64, {{ line_chart }}" alt="Net worth line chart">
-    {% else %}
-    <p>No net worth history yet.</p>
-    {% endif %}
-    {% if pie_chart %}
-    <img src="data:image/png;base64, {{ pie_chart }}" alt="Networth pie chart">
-    {% else %}
-    <p>No net worth history yet.</p>
+    </div>
+
+    <div class="gray-widget">
+        <h3>Assets vs. Liabilities</h3>
+        {% if pie_chart %}
+        <img src="data:image/png;base64, {{ pie_chart }}" alt="Networth pie chart">
+        {% else %}
+        <p>No net worth history yet.</p>
+        {% endif %}
+    </div>
 </div>
-{% endif %}
 {% endblock %}
