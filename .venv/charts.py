@@ -9,9 +9,9 @@ import base64
 def networth_pie_chart(assets_total, liabilities_total):
     labels = ["Assets", "Liabilities"]
     values = [assets_total, liabilities_total]
-    colors =["green", "red"]
+    colors =['#B1FF50', "lightgray"]
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(6,6))
     ax.pie(values, labels=labels, colors=colors, autopct="%1.1f%%", startangle=90)
     ax.axis("equal")
 
@@ -25,7 +25,7 @@ def networth_pie_chart(assets_total, liabilities_total):
 
 # Line chart
 def networth_line_chart(months, values):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(8,4))
 
     ax.plot(months, values)
     ax.set_xlabel("Month")

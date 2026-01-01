@@ -42,7 +42,7 @@ def format_local_time(utc_string, tz):
     utc_dt = utc_dt.replace(tzinfo=ZoneInfo("UTC"))
 
     local_dt = utc_dt.astimezone(ZoneInfo(tz))
-    return local_dt.strftime("%m-%d %H:%M:%S")
+    return local_dt.strftime("%m/%d %H:%M:%S")
 
 # List of timezones 
 timezones = [

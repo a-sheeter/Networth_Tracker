@@ -31,6 +31,7 @@ body {
     justify-content: space-between;
     align-items:center;
     align-content:center;
+    gap:15px;
 }
 
 .full-height {
@@ -40,14 +41,17 @@ body {
 /*grid*/
 .grid-container {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
 }
+
 
 /*widgets*/
 .gray-widget {
     background:var(--main-gray);
     padding: 25px;
     border-radius: 10px;
+    min-height: 165px;
 }
 
 /*Font styles*/
@@ -224,4 +228,31 @@ th, td {
         padding-right: 12px;
         font-weight: 300;
     }
+}
+
+/*charts*/
+.chart-img {
+    width:100%;
+    height:auto;
+    display:block;
+}
+
+.line-img {
+    max-width:100%;
+}
+
+.pie-img {
+    max-width:75%;
+}
+
+/*icons*/
+.green-icon {
+    border-radius: 100%;
+    background: var(--main-green);
+    width: 30px;
+    height:30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
 }
